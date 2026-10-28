@@ -192,18 +192,48 @@ const ClassForm = ({ type, data, setOpen, relatedData }: FormProps) => {
     >
       <FormGrid>
         {data?.id && (
-          <InputField label="Id" name="id" defaultValue={data?.id} register={register} error={errors?.id} hidden />
+          <InputField
+            label="Id"
+            name="id"
+            defaultValue={data?.id}
+            register={register}
+            error={errors?.id}
+            hidden
+          />
         )}
-        <InputField label="Class Name" name="name" defaultValue={data?.name} register={register} error={errors?.name} />
-        <InputField label="Capacity" name="capacity" type="number" defaultValue={data?.capacity} register={register} error={errors?.capacity} />
-        <SelectField label="Supervisor" name="supervisorId" register={register} error={errors.supervisorId}>
+        <InputField
+          label="Class Name"
+          name="name"
+          defaultValue={data?.name}
+          register={register}
+          error={errors?.name}
+        />
+        <InputField
+          label="Capacity"
+          name="capacity"
+          type="number"
+          defaultValue={data?.capacity}
+          register={register}
+          error={errors?.capacity}
+        />
+        <SelectField
+          label="Supervisor"
+          name="supervisorId"
+          register={register}
+          error={errors.supervisorId}
+        >
           {teachers.map((t: { id: string; name: string; surname: string }) => (
             <option value={t.id} key={t.id}>
               {t.name} {t.surname}
             </option>
           ))}
         </SelectField>
-        <SelectField label="Grade" name="gradeId" register={register} error={errors.gradeId}>
+        <SelectField
+          label="Grade"
+          name="gradeId"
+          register={register}
+          error={errors.gradeId}
+        >
           {grades.map((g: { id: number; level: number }) => (
             <option value={g.id} key={g.id}>
               Grade {g.level}

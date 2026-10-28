@@ -110,7 +110,7 @@ export const deleteSubject = async (
   try {
     await prisma.subject.delete({
       where: {
-        id: parseInt(id),
+        id: id,
       },
     });
 
@@ -181,7 +181,7 @@ export const deleteClass = async (
   try {
     await prisma.class.delete({
       where: {
-        id: parseInt(id),
+        id: id,
       },
     });
 
@@ -388,7 +388,7 @@ export const deleteExam = async (
   try {
     await prisma.exam.delete({
       where: {
-        id: parseInt(id),
+        id: id,
         ...(role === "teacher" ? { lesson: { teacherId: userId! } } : {}),
       },
     });
@@ -516,7 +516,7 @@ export const deleteAssignment = async (
   try {
     await prisma.assignment.delete({
       where: {
-        id: parseInt(id),
+        id: id,
         ...(role === "teacher" ? { lesson: { teacherId: userId! } } : {}),
       },
     });
@@ -721,7 +721,7 @@ export const deleteLesson = async (
   try {
     await prisma.lesson.delete({
       where: {
-        id: parseInt(id),
+        id: id,
         ...(role === "teacher" ? { lesson: { teacherId: userId! } } : {}),
       },
     });
@@ -752,12 +752,30 @@ export const createResult = async (
 
     // Optional authorization checks for teachers
     if (role === "teacher") {
-      const teacherLesson = await prisma.lesson.findFirst({
-        where: {
-          teacherId: userId!,
-          id: data.assignmentId || data.examId,
-        },
-      });
+      const lessonId = examId
+        ? (
+            await prisma.exam.findUnique({
+              where: { id: examId },
+              select: { lessonId: true },
+            })
+          )?.lessonId
+        : (
+            await prisma.assignment.findUnique({
+              where: { id: assignmentId! },
+              select: { lessonId: true },
+            })
+          )?.lessonId;
+
+      const teacherLesson = lessonId
+        ? await prisma.lesson.findFirst({
+            where: {
+              // teacherId: userId!,
+              // _id: data.assignmentId || data.examId,
+              id: lessonId,
+              teacherId: userId!,
+            },
+          })
+        : null;
 
       if (!teacherLesson) {
         return {
@@ -771,8 +789,8 @@ export const createResult = async (
       data: {
         score,
         studentId,
-        examId: examId || null,
-        assignmentId: assignmentId || null,
+        examId: examId || undefined,
+        assignmentId: assignmentId || undefined,
       },
     });
 
@@ -804,6 +822,36 @@ export const updateResult = async (
   try {
     const { id, score, studentId, examId, assignmentId } = validatedFields.data;
 
+    if (role === "teacher") {
+      const lessonId = examId
+        ? (
+            await prisma.exam.findUnique({
+              where: { id: examId },
+              select: { lessonId: true },
+            })
+          )?.lessonId
+        : (
+            await prisma.assignment.findUnique({
+              where: { id: assignmentId },
+              select: { lessonId: true },
+            })
+          )?.lessonId;
+
+      const teacherLesson = lessonId
+        ? await prisma.lesson.findFirst({
+            where: { id: lessonId, teacherId: userId! },
+          })
+        : null;
+
+      if (!teacherLesson) {
+        return {
+          success: false,
+          error: true,
+          message: "Lesson not found or unauthorized",
+        };
+      }
+    }
+
     await prisma.result.update({
       where: { id },
       data: {
@@ -831,7 +879,7 @@ export const deleteResult = async (
 
   try {
     await prisma.result.delete({
-      where: { id: parseInt(id) },
+      where: { id: id },
     });
 
     revalidatePath("/list/results");
@@ -969,7 +1017,7 @@ export const createTeacher = async (
         img: data.img,
         subjects: {
           connect: data.subjects?.map((subjectId: string) => ({
-            id: parseInt(subjectId),
+            id: subjectId,
           })),
         },
       },
@@ -1176,11 +1224,11 @@ export const updateTeacher = async (
         bloodType: data.bloodType,
         birthday: data.birthday ? new Date(data.birthday) : undefined,
         sex: data.sex,
-        img: data.img,
+        img: data?.img ?? undefined,
         subjects: {
           set:
             data.subjects?.map((subjectId: string) => ({
-              id: parseInt(subjectId),
+              id: subjectId,
             })) || [],
         },
       },
@@ -1188,7 +1236,7 @@ export const updateTeacher = async (
 
     return { success: true, error: false };
   } catch (error: any) {
-    //console.log(error);
+    console.log(error);
 
     const uniqueFieldLabels: Record<string, string> = {
       username: "username",
@@ -1293,7 +1341,7 @@ export const createStudent = async (
         const clerk = await clerkClient();
         await clerk.users.deleteUser(clerkUserId);
       } catch (rollbackError) {
-        // console.log("Failed to roll back Clerk user:", rollbackError);
+        console.log("Failed to roll back Clerk user:", rollbackError);
       }
     }
 
@@ -1538,9 +1586,9 @@ export const updateStudent = async (
       return { success: false, error: true, message: "Student not found!" };
     }
     // If check class is full or still free
-    if (currentStudent.classId !== classIdNum) {
+    if (currentStudent.classId !== data.classId) {
       const classItem = await prisma.class.findUnique({
-        where: { id: classIdNum },
+        where: { id: data.classId },
         include: { _count: { select: { students: true } } },
       });
       // Check if the class is full
@@ -1580,8 +1628,8 @@ export const updateStudent = async (
         birthday: data.birthday ? new Date(data.birthday) : undefined,
         sex: data.sex,
         img: data.img || null,
-        gradeId: gradeIdNum,
-        classId: classIdNum,
+        gradeId: data.gradeId,
+        classId: data.classId,
         parentId: data.parentId,
       },
     });
@@ -1957,7 +2005,7 @@ export const updateEvent = async (
       validatedFields.data;
 
     await prisma.event.update({
-      where: { id },
+      where: { id: id as string },
       data: {
         title,
         description,
@@ -1984,7 +2032,7 @@ export const deleteEvent = async (
 
   try {
     await prisma.event.delete({
-      where: { id: parseInt(id) },
+      where: { id: id },
     });
 
     // revalidatePath("/list/events");
@@ -2079,7 +2127,7 @@ export const deleteAnnouncement = async (
 
   try {
     await prisma.announcement.delete({
-      where: { id: parseInt(id) },
+      where: { id: id },
     });
 
     // revalidatePath("/list/announcements");
@@ -2170,7 +2218,7 @@ export const deleteAttendance = async (
 
   try {
     await prisma.attendance.delete({
-      where: { id: parseInt(id) },
+      where: { id: id },
     });
 
     // revalidatePath("/list/attendance");
@@ -2257,7 +2305,7 @@ export const deleteMessage = async (
 
   try {
     await prisma.message.delete({
-      where: { id: parseInt(id) },
+      where: { id: id },
     });
 
     // revalidatePath("/list/messages");
@@ -2614,7 +2662,7 @@ export const deleteGrade = async (
 
   try {
     await prisma.grade.delete({
-      where: { id: parseInt(id) },
+      where: { id: id },
     });
 
     // revalidatePath("/list/events");
@@ -2637,30 +2685,64 @@ export async function createFeeStructure(
     const { title, classId, term, session, amount } = parsed.data;
 
     const classIds =
-      classId === 0
+      classId === "0"
         ? (await prisma.class.findMany({ select: { id: true } })).map(
             (c) => c.id,
           )
         : [classId];
     if (classIds.length === 0) return fail("No classes found.");
 
-    const res = await prisma.feeStructure.createMany({
-      data: classIds.map((id) => ({
-        title,
-        classId: id,
-        term,
-        session,
-        amount,
-      })),
-      skipDuplicates: true,
-    });
+    let createdCount = 0;
+    for (const id of classIds) {
+      try {
+        await prisma.feeStructure.create({
+          data: { title, classId: id, term, session, amount },
+        });
+        createdCount++;
+      } catch (e: any) {
+        if (e?.code !== "P2002") throw e;
+      }
+    }
     revalidatePath("/list/accounting");
     revalidatePath("/list/accounting/fees");
     revalidatePath("/admin");
-    return res.count === 0
+    return createdCount === 0
       ? fail("That fee already exists for this class/term/session.")
       : ok();
   } catch (e) {
+    return handle(e);
+  }
+}
+
+export async function updateFeeStructure(
+  currentState: CurrentState,
+  formData: FeeSchema,
+): Promise<CurrentState> {
+  try {
+    await requireAdmin();
+    const parsed = feeSchema.safeParse(formData);
+    if (!parsed.success) return fail(parsed.error.issues[0].message);
+
+    const { id, title, classId, term, session, amount } = parsed.data;
+    if (!id) return fail("Fee id is missing.");
+    if (classId === "0") return fail("Select a class.");
+
+    // changing the amount after money was received would corrupt balances
+    const used = await prisma.payment.count({ where: { feeStructureId: id } });
+    if (used > 0) return fail("This fee already has payments, so it can't be edited.");
+
+    await prisma.feeStructure.update({
+      where: { id },
+      data: { title, classId, term, session, amount },
+    });
+
+    revalidatePath("/list/accounting");
+    revalidatePath("/list/accounting/fees");
+    revalidatePath("/admin");
+    return ok();
+  } catch (e: any) {
+    if (e?.code === "P2002")
+      return fail("That fee already exists for this class/term/session.");
     return handle(e);
   }
 }
@@ -2671,11 +2753,13 @@ export async function deleteFeeStructure(
 ): Promise<CurrentState> {
   try {
     await requireAdmin();
-    const id = Number(data.get("id"));
-    const used = await prisma.payment.count({ where: { feeStructureId: id } });
+    const id = (data.get("id"));
+    const used = await prisma.payment.count({
+      where: { feeStructureId: String(id) },
+    });
     if (used > 0)
       return fail("This fee already has payments, so it can't be deleted.");
-    await prisma.feeStructure.delete({ where: { id } });
+    await prisma.feeStructure.delete({ where: { id: String(id) } });
     revalidatePath("/list/accounting");
     revalidatePath("/list/accounting/fees");
     revalidatePath("/admin");
@@ -2685,9 +2769,9 @@ export async function deleteFeeStructure(
   }
 }
 
- 
+
 export async function recordPayment(
-   currentState: CurrentState,
+  currentState: CurrentState,
   formData: PaymentSchema,
 ): Promise<CurrentState> {
   try {
@@ -2695,18 +2779,22 @@ export async function recordPayment(
     const parsed = paymentSchema.safeParse(formData);
     if (!parsed.success) return fail(parsed.error.issues[0].message);
     const p = parsed.data;
- 
+
     await prisma.$transaction(async (tx) => {
-      const fee = await tx.feeStructure.findUnique({ where: { id: p.feeStructureId } });
+      const fee = await tx.feeStructure.findUnique({
+        where: { id: String(p.feeStructureId) },
+      });
       if (!fee) throw new UserError("Fee not found.");
- 
+
       const student = await tx.student.findUnique({
         where: { id: p.studentId },
         select: { classId: true },
       });
       if (!student || student.classId !== fee.classId)
-        throw new UserError("This student is not in the class this fee belongs to.");
- 
+        throw new UserError(
+          "This student is not in the class this fee belongs to.",
+        );
+
       const agg = await tx.payment.aggregate({
         where: { studentId: p.studentId, feeStructureId: fee.id },
         _sum: { amount: true },
@@ -2714,8 +2802,10 @@ export async function recordPayment(
       const balance = fee.amount - (agg._sum.amount ?? 0);
       if (balance <= 0) throw new UserError("This fee is already fully paid.");
       if (p.amount > balance)
-        throw new UserError(`Amount is more than the balance (${naira(balance)}).`);
- 
+        throw new UserError(
+          `Amount is more than the balance (${naira(balance)}).`,
+        );
+
       await tx.payment.create({
         data: {
           studentId: p.studentId,
@@ -2730,7 +2820,7 @@ export async function recordPayment(
         },
       });
     });
- 
+
     revalidatePath("/list/accounting");
     revalidatePath("/admin");
     return ok();
@@ -2738,15 +2828,17 @@ export async function recordPayment(
     return handle(e);
   }
 }
- 
+
 export async function deletePayment(
   currentState: CurrentState,
   data: FormData,
 ): Promise<CurrentState> {
   try {
     await requireAdmin();
-    await prisma.payment.delete({ where: { id: Number(data.get("id")) } });
-     revalidatePath("/list/accounting");
+    const id = data.get("id");
+    if (typeof id !== "string" || !id) throw new Error("Invalid payment ID");
+    await prisma.payment.delete({ where: { id } });
+    revalidatePath("/list/accounting");
     revalidatePath("/admin");
     return ok();
   } catch (e) {

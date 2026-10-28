@@ -17,12 +17,12 @@ const field =
   "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 outline-none focus:ring-2 focus:ring-blue-700/30 focus:border-blue-700";
 const lbl = "text-[10px] font-semibold uppercase tracking-wider text-gray-500";
 
-const FeeStructureForm = ({ classes }: { classes: { id: number; name: string }[] }) => {
+const FeeStructureForm = ({ classes }: { classes: { id: string; name: string }[] }) => {
   const router = useRouter();
   const [state, action, pending] = useActionState(createFeeStructure, initial);
 
   const [title, setTitle] = useState("School Fees");
-  const [classId, setClassId] = useState(0);
+  const [classId, setClassId] = useState<string>("0");
   const [term, setTerm] = useState<string>(TERMS[0]);
   const [session, setSession] = useState(currentSession());
   const [amount, setAmount] = useState<number | "">("");
@@ -72,7 +72,7 @@ const FeeStructureForm = ({ classes }: { classes: { id: number; name: string }[]
 
         <label className="flex flex-col gap-1.5">
           <span className={lbl}>Class</span>
-          <select className={field} value={classId} onChange={(e) => setClassId(Number(e.target.value))}>
+          <select className={field} value={classId} onChange={(e) => setClassId(e.target.value)}>
             <option value={0}>All classes</option>
             {classes.map((c) => (
               <option key={c.id} value={c.id}>

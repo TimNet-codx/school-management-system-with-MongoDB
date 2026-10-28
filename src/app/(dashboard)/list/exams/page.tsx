@@ -251,13 +251,13 @@ const ExamListPage = async ({
     if (value === undefined) continue;
     switch (key) {
       case "classId":
-        lessonFilter.classId = parseInt(value);
+        lessonFilter.classId = (value);
         break;
       case "teacherId":
         lessonFilter.teacherId = value;
         break;
       case "subjectId":
-        lessonFilter.subjectId = parseInt(value);
+        lessonFilter.subjectId = (value);
         break;
       case "search":
         lessonFilter.subject = { name: { contains: value, mode: "insensitive" } };

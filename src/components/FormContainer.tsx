@@ -20,7 +20,9 @@ export type FormContainerProps = {
     | "message"
     | "profile"
     | "admin"
-    | "grade";
+    | "grade"
+    | "fee"
+    | "payment";
   type: "create" | "update" | "delete";
   data?: any;
   id?: number | String;
@@ -189,7 +191,7 @@ const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
           lessons: attendanceLessons,
         };
         break;
-      case "message": 
+      case "message":
         const teachers = await prisma.teacher.findMany({
           select: { id: true, name: true, surname: true },
         });
@@ -219,6 +221,45 @@ const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
         ];
         relatedData = { users: formattedUsers, currentUserId: userId };
         break;
+      case "fee":
+        const classesFee = await prisma.class.findMany({
+          select: { id: true, name: true },
+          orderBy: { name: "asc" },
+        });
+        relatedData = { classFee: classesFee };
+        break;
+      case "payment": {
+        const feeId = (data as any)?.feeStructureId;
+        const fee = feeId
+          ? await prisma.feeStructure.findUnique({
+              where: { id: feeId },
+              select: { classId: true, amount: true },
+            })
+          : null;
+        const students = fee
+          ? await prisma.student.findMany({
+              where: { classId: fee.classId },
+              orderBy: [{ surname: "asc" }, { name: "asc" }],
+              select: {
+                id: true,
+                name: true,
+                surname: true,
+                payments: {
+                  where: { feeStructureId: feeId },
+                  select: { amount: true },
+                },
+              },
+            })
+          : [];
+        relatedData = {
+          studentList: students.map((s) => ({
+            id: s.id,
+            label: `${s.surname} ${s.name}`,
+            paid: s.payments.reduce((t, p) => t + p.amount, 0),
+          })),
+        };
+        break;
+      }
       default:
         break;
     }

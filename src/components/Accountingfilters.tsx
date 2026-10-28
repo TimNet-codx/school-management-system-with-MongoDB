@@ -16,8 +16,8 @@ const AccountingFilters = ({
   status,
   q,
 }: {
-  classes: { id: number; name: string }[];
-  structures: { id: number; label: string }[];
+  classes: { id: string; name: string }[];
+  structures: { id: string; label: string }[];
   classId?: number;
   structureId?: number;
   status: string;

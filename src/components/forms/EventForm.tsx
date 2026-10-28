@@ -191,7 +191,7 @@ const EventForm = ({ type, data, setOpen, relatedData }: FormProps) => {
       description: data?.description || "",
       startTime: formatDateForInput(data?.startTime) as any,
       endTime: formatDateForInput(data?.endTime) as any,
-      classId: data?.classId ? Number(data.classId) : undefined,
+      classId: data?.classId ? (data.classId) : undefined,
     },
   });
 
@@ -225,7 +225,14 @@ const EventForm = ({ type, data, setOpen, relatedData }: FormProps) => {
     >
       <FormGrid>
         {data?.id && (
-          <InputField label="Id" name="id" defaultValue={data?.id} register={register} error={errors?.id} hidden />
+          <InputField
+            label="Id"
+            name="id"
+            defaultValue={data?.id}
+            register={register}
+            error={errors?.id as any}
+            hidden
+          />
         )}
         <InputField label="Event Title" name="title" defaultValue={data?.title} register={register} error={errors?.title} className="sm:col-span-2" />
         <SelectField label="Class (optional)" name="classId" register={register} error={errors.classId}>

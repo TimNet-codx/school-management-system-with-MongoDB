@@ -355,8 +355,6 @@ const StudentForm = ({ type, data, setOpen, relatedData }: FormProps) => {
         ...formData,
         id: data?.id,
         img: img?.secure_url || data?.img || null,
-        gradeId: Number(formData.gradeId),
-        classId: Number(formData.classId),
       };
 
       startTransition(() => {
@@ -365,6 +363,7 @@ const StudentForm = ({ type, data, setOpen, relatedData }: FormProps) => {
     },
     (invalidErrors) => {
       console.error("Form Validation Errors:", invalidErrors);
+      toast.error("Please check the form fields.");
     },
   );
 
@@ -444,7 +443,7 @@ const StudentForm = ({ type, data, setOpen, relatedData }: FormProps) => {
       <FormSection title="Class Placement">
         <FormGrid>
           <SelectField label="Grade" name="gradeId" defaultValue={data?.gradeId} register={register} error={errors.gradeId}>
-            {grades.map((g: { id: number; level: number }) => (
+            {grades.map((g: { id: string; level: string }) => (
               <option value={g.id} key={g.id}>
                 Grade {g.level}
               </option>
@@ -452,7 +451,7 @@ const StudentForm = ({ type, data, setOpen, relatedData }: FormProps) => {
           </SelectField>
           <SelectField label="Class" name="classId" defaultValue={data?.classId} register={register} error={errors.classId} className="sm:col-span-2">
             {classes.map(
-              (c: { id: number; name: string; capacity: number; _count: { students: number } }) => (
+              (c: { id: string; name: string; capacity: number; _count: { students: number } }) => (
                 <option value={c.id} key={c.id}>
                   {c.name} — ({c._count.students}/{c.capacity} capacity)
                 </option>

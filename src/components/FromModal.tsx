@@ -311,7 +311,6 @@
 
 // export default FormModal;
 
-
 "use client";
 
 import {
@@ -330,6 +329,8 @@ import {
   deleteStudent,
   deleteSubject,
   deleteTeacher,
+  deleteFeeStructure,
+  deletePayment,
 } from "@/lib/serverAction";
 import { Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -344,6 +345,7 @@ import {
 } from "react";
 import { toast } from "react-toastify";
 import { FormContainerProps } from "./FormContainer";
+import FeeStructureForm from "./forms/Feestructureform";
 
 const deleteActionMap = {
   subject: deleteSubject,
@@ -361,6 +363,8 @@ const deleteActionMap = {
   message: deleteMessage,
   admin: deleteAdmin,
   grade: deleteGrade,
+  fee: deleteFeeStructure,
+  payment: deletePayment,
 };
 
 const Loading = () => (
@@ -371,27 +375,60 @@ const Loading = () => (
 );
 
 // Lazy-loaded forms
-const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), { loading: Loading });
-const TeacherForm = dynamic(() => import("./forms/TeacherForm"), { loading: Loading });
-const StudentForm = dynamic(() => import("./forms/StudentForm"), { loading: Loading });
-const ParentForm = dynamic(() => import("./forms/ParentForm"), { loading: Loading });
-const SubjectForm = dynamic(() => import("./forms/SubjectForm"), { loading: Loading });
-const ClassForm = dynamic(() => import("./forms/ClassForm"), { loading: Loading });
-const ExamForm = dynamic(() => import("./forms/ExamForm"), { loading: Loading });
-const AssignmentForm = dynamic(() => import("./forms/AssignmentForm"), { loading: Loading });
-const LessonForm = dynamic(() => import("./forms/LessonForm"), { loading: Loading });
-const ResultForm = dynamic(() => import("./forms/ResultForm"), { loading: Loading });
-const EventForm = dynamic(() => import("./forms/EventForm"), { loading: Loading });
-const AdminForm = dynamic(() => import("./forms/AdminForm"), { loading: Loading });
-const GradeForm = dynamic(() => import("./forms/GradeForm"), { loading: Loading });
-
+const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), {
+  loading: Loading,
+});
+const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
+  loading: Loading,
+});
+const StudentForm = dynamic(() => import("./forms/StudentForm"), {
+  loading: Loading,
+});
+const ParentForm = dynamic(() => import("./forms/ParentForm"), {
+  loading: Loading,
+});
+const SubjectForm = dynamic(() => import("./forms/SubjectForm"), {
+  loading: Loading,
+});
+const ClassForm = dynamic(() => import("./forms/ClassForm"), {
+  loading: Loading,
+});
+const ExamForm = dynamic(() => import("./forms/ExamForm"), {
+  loading: Loading,
+});
+const AssignmentForm = dynamic(() => import("./forms/AssignmentForm"), {
+  loading: Loading,
+});
+const LessonForm = dynamic(() => import("./forms/LessonForm"), {
+  loading: Loading,
+});
+const ResultForm = dynamic(() => import("./forms/ResultForm"), {
+  loading: Loading,
+});
+const EventForm = dynamic(() => import("./forms/EventForm"), {
+  loading: Loading,
+});
+const AdminForm = dynamic(() => import("./forms/AdminForm"), {
+  loading: Loading,
+});
+const GradeForm = dynamic(() => import("./forms/GradeForm"), {
+  loading: Loading,
+});
+const FeeForm = dynamic(() => import("./forms/Feeform"), { loading: Loading });
 
 const AttendanceForm = dynamic(() => import("./forms/AttendanceForm"), {
   loading: Loading,
   ssr: false,
 });
-const MessageForm = dynamic(() => import("./forms/MessageForm"), { loading: Loading });
-const ProfileForm = dynamic(() => import("./forms/ProfileForm"), { loading: Loading });
+const MessageForm = dynamic(() => import("./forms/MessageForm"), {
+  loading: Loading,
+});
+const ProfileForm = dynamic(() => import("./forms/ProfileForm"), {
+  loading: Loading,
+});
+const PaymentForm = dynamic(() => import("./forms/PaymentForm"), {
+  loading: Loading,
+});
 
 const formComponents: Record<string, ComponentType<any>> = {
   announcement: AnnouncementForm,
@@ -410,7 +447,8 @@ const formComponents: Record<string, ComponentType<any>> = {
   profile: ProfileForm,
   admin: AdminForm,
   grade: GradeForm,
-
+  fee: FeeForm,
+  payment: PaymentForm,
 };
 
 /**
@@ -429,7 +467,7 @@ const DeleteForm = ({
   const router = useRouter();
   const [state, formAction, pending] = useActionState(
     deleteActionMap[table as keyof typeof deleteActionMap],
-    { success: false, error: false }
+    { success: false, error: false },
   );
 
   useEffect(() => {
@@ -441,7 +479,10 @@ const DeleteForm = ({
   }, [state.success, table, setOpen, router]);
 
   return (
-    <form action={formAction} className="flex flex-col items-center gap-4 py-2 text-center">
+    <form
+      action={formAction}
+      className="flex flex-col items-center gap-4 py-2 text-center"
+    >
       <input type="hidden" name="id" value={String(id)} readOnly />
 
       <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center">
@@ -458,7 +499,9 @@ const DeleteForm = ({
       </div>
 
       {state.error && (
-        <p className="text-xs text-red-500">Something went wrong. Please try again.</p>
+        <p className="text-xs text-red-500">
+          Something went wrong. Please try again.
+        </p>
       )}
 
       <div className="flex items-center gap-2">
@@ -600,3 +643,6 @@ const FormModal = ({
 };
 
 export default FormModal;
+
+
+

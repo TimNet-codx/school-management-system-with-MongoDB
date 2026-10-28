@@ -49,12 +49,18 @@ const AdminForm = ({ type, data, setOpen }: FormProps) => {
     message: undefined,
   });
 
-  const onSubmit = handleSubmit((values) => {
-    startTransition(() => {
-      // keep the existing photo if no new one was uploaded
-      formAction({ ...values, img: img?.secure_url ?? data?.img });
-    });
-  });
+  const onSubmit = handleSubmit(
+    (values) => {
+      startTransition(() => {
+        // keep the existing photo if no new one was uploaded
+        formAction({ ...values, img: img?.secure_url ?? data?.img });
+      });
+    },
+    (errs) => {
+      console.log("Admin form validation errors:", errs);
+      toast.error("Please check the form fields.");
+    },
+  );
 
   const router = useRouter();
   useEffect(() => {

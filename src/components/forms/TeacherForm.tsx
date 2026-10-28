@@ -303,12 +303,27 @@ const TeacherForm = ({ type, data, setOpen, relatedData }: FormProps) => {
     message: undefined,
   });
 
-  const onSubmit = handleSubmit((values) => {
+  // const onSubmit = handleSubmit((data) => {
+  //   startTransition(() => {
+  //     // keep the existing photo if no new one was uploaded
+  //     // formAction({ ...values, img: img?.secure_url ?? data?.img });
+
+  //     formAction({ ...data, img: img?.secure_url });
+  //   });
+  // });
+
+  const onSubmit = handleSubmit(
+  (values) => {
     startTransition(() => {
-      // keep the existing photo if no new one was uploaded
-      formAction({ ...values, img: img?.secure_url ?? data?.img });
+      // new upload wins, otherwise keep the existing photo
+      formAction({ ...values, img: img?.secure_url ?? data?.img ?? "" });
     });
-  });
+  },
+  (errs) => {
+    console.log("Teacher form validation errors:", errs);
+    toast.error("Please check the form fields.");
+  },
+);
 
   const router = useRouter();
   useEffect(() => {

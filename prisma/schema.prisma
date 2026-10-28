@@ -1,7 +1,11 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// School TimNet: MongoDB version
+// Rules used below:
+//  - Clerk-owned ids (Admin, Student, Teacher, Parent)  ->  String @id @map("_id")        (NOT ObjectId)
+//  - Everything else                                    ->  String @id @default(auto()) @map("_id") @db.ObjectId
+//  - Foreign keys to ObjectId models                    ->  String @db.ObjectId
+//  - Foreign keys to Clerk-id models                    ->  plain String
+//  - Optional @unique fields were made non-unique (MongoDB treats missing/null as a value,
+//    so a second student with no email would fail with a duplicate-key error).
 
 generator client {
   provider = "prisma-client"
@@ -9,72 +13,79 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
 model Admin {
-  id       String       @id
-  username String       @unique
+  id        String   @id @map("_id")
+  username  String   @unique
   name      String
   surname   String
-  email     String?      @unique
-  phone     String?      @unique
+  email     String?
+  phone     String?
   address   String
   img       String?
   bloodType String
   sex       UserSex
   birthday  DateTime
-  createdAt DateTime      @default(now())
+  createdAt DateTime @default(now())
 }
 
 model Student {
-  id          String       @id
+  id          String       @id @map("_id")
   username    String       @unique
   name        String
   surname     String
-  email       String?      @unique
-  phone       String?      @unique
+  email       String?
+  phone       String?
   address     String
   img         String?
   bloodType   String
   sex         UserSex
   createdAt   DateTime     @default(now())
   parentId    String?
-  parent      Parent?       @relation(fields: [parentId], references: [id])
-  classId     Int
+  parent      Parent?      @relation(fields: [parentId], references: [id])
+  classId     String       @db.ObjectId
   class       Class        @relation(fields: [classId], references: [id])
-  gradeId     Int
+  gradeId     String       @db.ObjectId
   grade       Grade        @relation(fields: [gradeId], references: [id])
   attendances Attendance[]
   results     Result[]
   birthday    DateTime
   payments    Payment[]
+
+  @@index([classId])
 }
 
 model Teacher {
-  id        String    @id
+  id        String    @id @map("_id")
   username  String    @unique
   name      String
   surname   String
-  email     String?   @unique
-  phone     String?   @unique
+  email     String?
+  phone     String?
   address   String
   img       String?
   bloodType String
   sex       UserSex
   createdAt DateTime  @default(now())
-  subjects  Subject[]
+  birthday  DateTime
+
+  // many-to-many with Subject: MongoDB needs the id array on BOTH sides
+  subjectIds String[]  @db.ObjectId
+  subjects   Subject[] @relation(fields: [subjectIds], references: [id])
+
   lessons   Lesson[]
   classes   Class[]
-  birthday  DateTime
 }
 
 model Parent {
-  id        String    @id
+  id        String    @id @map("_id")
   username  String    @unique
   name      String
   surname   String
-  email     String?   @unique
+  email     String?
   phone     String    @unique
   address   String
   sex       UserSex
@@ -83,15 +94,15 @@ model Parent {
 }
 
 model Grade {
-  id    Int @id @default(autoincrement())
-  level String  @unique
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  level String @unique
 
   students Student[]
   classess Class[]
 }
 
 model Class {
-  id       Int    @id @default(autoincrement())
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
   name     String @unique
   capacity Int
 
@@ -99,7 +110,7 @@ model Class {
   supervisor    Teacher?       @relation(fields: [supervisorId], references: [id])
   lessons       Lesson[]
   students      Student[]
-  gradeId       Int
+  gradeId       String         @db.ObjectId
   grade         Grade          @relation(fields: [gradeId], references: [id])
   events        Event[]
   announcements Announcement[]
@@ -107,22 +118,25 @@ model Class {
 }
 
 model Subject {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  teachers Teacher[]
-  lessons  Lesson[]
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+
+  teacherIds String[]  // Teacher ids are Clerk ids, so plain String
+  teachers   Teacher[] @relation(fields: [teacherIds], references: [id])
+
+  lessons Lesson[]
 }
 
 model Lesson {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   day       Day
   startTime DateTime
   endTime   DateTime
 
-  subjectId   Int
+  subjectId   String       @db.ObjectId
   subject     Subject      @relation(fields: [subjectId], references: [id])
-  classId     Int
+  classId     String       @db.ObjectId
   class       Class        @relation(fields: [classId], references: [id])
   teacherId   String
   teacher     Teacher      @relation(fields: [teacherId], references: [id])
@@ -132,73 +146,73 @@ model Lesson {
 }
 
 model Exam {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   title     String
   startTime DateTime
   endTime   DateTime
 
-  lessonId Int
+  lessonId String   @db.ObjectId
   lesson   Lesson   @relation(fields: [lessonId], references: [id])
   results  Result[]
 }
 
 model Assignment {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   title     String
   startDate DateTime
   dueDate   DateTime
 
-  lessonId Int
+  lessonId String   @db.ObjectId
   lesson   Lesson   @relation(fields: [lessonId], references: [id])
   results  Result[]
 }
 
 model Result {
-  id    Int @id @default(autoincrement())
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
   score Int
 
-  examId       Int?
+  examId       String?     @db.ObjectId
   exam         Exam?       @relation(fields: [examId], references: [id])
-  assignmentId Int?
+  assignmentId String?     @db.ObjectId
   assignment   Assignment? @relation(fields: [assignmentId], references: [id])
   studentId    String
   student      Student     @relation(fields: [studentId], references: [id])
 }
 
 model Attendance {
-  id      Int      @id @default(autoincrement())
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
   date    DateTime
   present Boolean
 
   studentId String
   student   Student @relation(fields: [studentId], references: [id])
-  lessonId  Int
+  lessonId  String  @db.ObjectId
   lesson    Lesson  @relation(fields: [lessonId], references: [id])
 }
 
 model Event {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String
   startTime   DateTime
   endTime     DateTime
 
-  classId Int?
-  class   Class? @relation(fields: [classId], references: [id])
+  classId String? @db.ObjectId
+  class   Class?  @relation(fields: [classId], references: [id])
 }
 
 model Announcement {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String
   date        DateTime
 
-  classId Int?
-  class   Class? @relation(fields: [classId], references: [id])
+  classId String? @db.ObjectId
+  class   Class?  @relation(fields: [classId], references: [id])
 }
 
 model Message {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   subject   String
   content   String
   createdAt DateTime @default(now())
@@ -208,23 +222,23 @@ model Message {
 }
 
 model Profile {
-  id        Int     @id @default(autoincrement())
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
   bio       String?
   phone     String?
   address   String?
   avatarUrl String?
 
-  userId    String  @unique
-  email    String? @unique
-  username String? @unique
+  userId   String  @unique
+  email    String?
+  username String?
   name     String  @default("")
   surname  String  @default("")
 }
 
 model FeeStructure {
-  id        Int       @id @default(autoincrement())
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
   title     String
-  classId   Int
+  classId   String    @db.ObjectId
   class     Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
   term      String
   session   String
@@ -237,10 +251,10 @@ model FeeStructure {
 }
 
 model Payment {
-  id             Int          @id @default(autoincrement())
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
   studentId      String
   student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  feeStructureId Int
+  feeStructureId String       @db.ObjectId
   feeStructure   FeeStructure @relation(fields: [feeStructureId], references: [id], onDelete: Restrict)
   amount         Int
   plan           String
@@ -266,5 +280,3 @@ enum Day {
   THURSDAY
   FRIDAY
 }
-
-

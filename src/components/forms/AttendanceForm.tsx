@@ -217,7 +217,7 @@ const AttendanceForm = ({ type, data, setOpen, relatedData }: FormProps) => {
       date: formatDateForInput(data?.date) as any,
       present: data?.present ?? true,
       studentId: data?.studentId || "",
-      lessonId: data?.lessonId != null ? Number(data.lessonId) : undefined,
+      lessonId: data?.lessonId != null ? (data.lessonId) : undefined,
     },
   });
 

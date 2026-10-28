@@ -209,7 +209,6 @@
 
 // export default ResultForm;
 
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -281,10 +280,23 @@ const ResultForm = ({ type, data, setOpen, relatedData }: FormProps) => {
     >
       <FormGrid>
         {data?.id && (
-          <InputField label="Id" name="id" defaultValue={data?.id} register={register} error={errors?.id} hidden />
+          <InputField
+            label="Id"
+            name="id"
+            defaultValue={data?.id}
+            register={register}
+            error={errors?.id}
+            hidden
+          />
         )}
 
-        <SelectField label="Student" name="studentId" register={register} error={errors.studentId} className="sm:col-span-2">
+        <SelectField
+          label="Student"
+          name="studentId"
+          register={register}
+          error={errors.studentId}
+          className="sm:col-span-2"
+        >
           <option value="">Select student</option>
           {students.map((s: { id: string; name: string; surname: string }) => (
             <option value={s.id} key={s.id}>
@@ -293,17 +305,31 @@ const ResultForm = ({ type, data, setOpen, relatedData }: FormProps) => {
           ))}
         </SelectField>
 
-        <InputField label="Score" name="score" type="number" defaultValue={data?.score} register={register} error={errors?.score} />
+        <InputField
+          label="Score"
+          name="score"
+          type="number"
+          defaultValue={data?.score}
+          register={register}
+          error={errors?.score}
+        />
 
         {/* Not registered with the form: it only decides which field below shows */}
         <div className="flex flex-col gap-1.5 w-full">
-          <label htmlFor="assessmentType" className="text-[10px] font-semibold tracking-wider text-gray-500 uppercase">
+          <label
+            htmlFor="assessmentType"
+            className="text-[10px] font-semibold tracking-wider text-gray-500 uppercase"
+          >
             Assessment Type
           </label>
           <select
             id="assessmentType"
             value={assessmentType}
-            onChange={(e) => handleAssessmentTypeChange(e.target.value as "exam" | "assignment")}
+            onChange={(e) =>
+              handleAssessmentTypeChange(
+                e.target.value as "exam" | "assignment",
+              )
+            }
             className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:ring-2 focus:border-blue-500 focus:ring-blue-500/20"
           >
             <option value="exam">Exam</option>
@@ -312,18 +338,30 @@ const ResultForm = ({ type, data, setOpen, relatedData }: FormProps) => {
         </div>
 
         {assessmentType === "exam" ? (
-          <SelectField label="Exam" name="examId" register={register} error={errors.examId} className="sm:col-span-2">
+          <SelectField
+            label="Exam"
+            name="examId"
+            register={register}
+            error={errors.examId}
+            className="sm:col-span-2"
+          >
             <option value="">Select exam</option>
-            {exams.map((e: { id: number; title: string }) => (
+            {exams.map((e: { id: string; title: string }) => (
               <option value={String(e.id)} key={e.id}>
                 {e.title}
               </option>
             ))}
           </SelectField>
         ) : (
-          <SelectField label="Assignment" name="assignmentId" register={register} error={errors.assignmentId} className="sm:col-span-2">
+          <SelectField
+            label="Assignment"
+            name="assignmentId"
+            register={register}
+            error={errors.assignmentId}
+            className="sm:col-span-2"
+          >
             <option value="">Select assignment</option>
-            {assignments.map((a: { id: number; title: string }) => (
+            {assignments.map((a: { id: string; title: string }) => (
               <option value={String(a.id)} key={a.id}>
                 {a.title}
               </option>
