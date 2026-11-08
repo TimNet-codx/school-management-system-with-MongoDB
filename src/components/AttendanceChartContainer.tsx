@@ -96,7 +96,7 @@ const AttendanceChartContainer = async () => {
   daysOfWeek.forEach((d) => (attendanceMap[d] = { present: 0, absent: 0 }));
 
   // Per-grade numbers for today
-  const gradeMap: Record<number, { present: number; total: number }> = {};
+  const gradeMap: Record<string, { present: number; total: number }> = {};
   let weekPresent = 0;
   let weekTotal = 0;
 

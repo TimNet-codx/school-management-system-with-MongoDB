@@ -50,7 +50,7 @@ const BigCalenderContainer = async ({
     where: {
       ...(type === "teacherId"
         ? { teacherId: id as string }
-        : { classId: id as number }),
+        : { classId: id as string }),
     },
   });
 

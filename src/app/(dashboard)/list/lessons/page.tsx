@@ -218,7 +218,7 @@ const LessonListPage = async ({
         query.teacherId = value;
         break;
       case "classId":
-        query.classId = parseInt(value);
+        query.classId = value;
         break;
       case "search":
         query.OR = [

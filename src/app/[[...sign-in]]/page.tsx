@@ -801,7 +801,7 @@ const LoginPage = () => {
   if (!isLoaded) {
     return (
       <LoadingScreen
-        title="School TimNet"
+        title="Grace School Portal"
         subtitle="Academic Information & Unified School Portal"
         steps={["Starting secure session…", "Loading the portal…"]}
       />
@@ -841,7 +841,7 @@ const LoginPage = () => {
           </div>
           <div className="leading-tight">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-gray-900">School TimNet</span>
+              <span className="font-bold text-gray-900">Grace School Portal</span>
               <span className="text-[10px] bg-blue-50 text-blue-600 border border-blue-100 rounded px-1.5 py-0.5">
                 v4.2
               </span>
@@ -1089,7 +1089,7 @@ const LoginPage = () => {
               “Empowering educators, fostering curious minds, and connecting
               digital learning communities in one unified space.”
               <footer className="not-italic text-[11px] text-white/60 mt-1">
-                — School TimNet Academic Governance Council
+                — Grace School Academic Governance Council
               </footer>
             </blockquote>
           </div>

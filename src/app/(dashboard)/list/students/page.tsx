@@ -230,7 +230,7 @@ const StudentListPage = async ({
         query.class = { lessons: { some: { teacherId: value } } };
         break;
       case "classId":
-        query.classId = parseInt(value);
+        query.classId = value;
         break;
       case "search":
         query.name = { contains: value, mode: "insensitive" };

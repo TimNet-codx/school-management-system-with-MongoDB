@@ -228,7 +228,7 @@ import { ITEM_PER_PAGE } from "@/lib/settings";
 import { getAuthUser } from "@/lib/utils";
 
 type ResultList = {
-  id: number;
+  id: string;
   title: string;
   studentName: string;
   teacherName: string;

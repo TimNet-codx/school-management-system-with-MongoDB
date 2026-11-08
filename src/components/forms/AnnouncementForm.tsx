@@ -196,7 +196,7 @@ const AnnouncementForm = ({ type, data, setOpen, relatedData }: FormProps) => {
       title: data?.title || "",
       description: data?.description || "",
       date: formatDateForInput(data?.date) as any,
-      classId: data?.classId ? Number(data.classId) : undefined,
+      classId: data?.classId ? (data.classId) : undefined,
     },
   });
 

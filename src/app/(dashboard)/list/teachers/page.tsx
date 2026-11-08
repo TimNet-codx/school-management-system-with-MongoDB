@@ -248,7 +248,7 @@ const TeacherListPage = async ({
     if (value === undefined) continue;
     switch (key) {
       case "classId":
-        query.lessons = { some: { classId: parseInt(value) } };
+        query.lessons = { some: { classId: value } };
         break;
       case "search":
         query.name = { contains: value, mode: "insensitive" };

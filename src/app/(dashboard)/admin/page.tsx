@@ -229,7 +229,7 @@ const AdminPage = async ({
 
   const CAPACITY = 1500; // adjust to your school's capacity
   const ratio = teacherCount ? Math.round(studentCount / teacherCount) : 0;
-
+  const sp = await searchParams;
   return (
     <div className="p-4 flex flex-col gap-4 bg-[#F6F8FB] min-h-screen">
       {/* ===== HEADER ===== */}
@@ -242,7 +242,7 @@ const AdminPage = async ({
             </span>
           </span>
           <h1 className="text-2xl font-bold text-gray-900">
-            School TimNet Administration
+            Grace School Portal Administration
           </h1>
           <p className="text-xs text-gray-500 mt-1 max-w-md">
             Real-time institutional diagnostics, academic operations, and
@@ -336,7 +336,7 @@ const AdminPage = async ({
 
         {/* Academic calendar */}
         <div className="h-auto lg:h-[420px] overflow-auto">
-          <EventCalendarContainer searchParams={searchParams} />
+          <EventCalendarContainer searchParams={sp} />
         </div>
 
         {/* Demographics */}
